@@ -33,14 +33,10 @@ func main() {
 	var (
 		configFilePath string
 		initConfigFile bool
-		copySource     bool
-		copyForce      bool
 	)
 
 	flag.StringVar(&configFilePath, "f", configFilePathDefault, "configuration file path")
 	flag.BoolVar(&initConfigFile, "n", initConfigFileDefault, "initialize config file with default settings")
-	flag.BoolVar(&copySource, "c", false, "if repo updated, create copy (and optional zip package)")
-	flag.BoolVar(&copyForce, "d", false, "force create copy (and optional zip package)")
 	flag.Parse()
 
 	if initConfigFile {
@@ -70,11 +66,12 @@ func main() {
 			os.Exit(3)
 		}
 
-		ver, err := svn.Fetch()
+		ver, loc, err := svn.Fetch()
 		if nil != err {
 			log.Msg(log.Error, "error", "svn.Fetch(): %s", err.Error())
 			os.Exit(4)
 		}
+		cfg.Ctold.SetPath(loc)
 
 		updated := (ver != cfg.Ctold.Last) || !cfg.Ctold.LastValid()
 		if updated {
@@ -89,16 +86,14 @@ func main() {
 			log.Msg(log.Info, "revision", "%s (no change)", ver)
 		}
 
-		if copyForce || (copySource && updated) {
-			if "" == cfg.Copy.Dest {
-				log.Msg(log.Error, "error", "invalid copy destination: (empty)")
-				os.Exit(5)
-			}
+		if err := cfg.MergeAll(); nil != err {
+			log.Msg(log.Error, "error", "cfg.MergeAll(): %s", err.Error())
+			os.Exit(5)
+		}
 
-			if err := svn.Copy(cfg.Copy.Dest, cfg.Copy.Zip, cfg.Copy.Level); nil != err {
-				log.Msg(log.Error, "error", "svn.Copy(): %s", err.Error())
-				os.Exit(6)
-			}
+		if err := cfg.CompressAll(); nil != err {
+			log.Msg(log.Error, "error", "cfg.CompressAll(): %s", err.Error())
+			os.Exit(6)
 		}
 	}
 
