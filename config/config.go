@@ -44,10 +44,10 @@ func (e FileExistsError) Error() string {
 }
 
 const (
-	CtoldPathToken = "{CTOLD}"
-	CtoldTagToken  = "{CTOLD.TAG}"
-	CtoldLastToken = "{CTOLD.REV}"
-	DateTimeToken  = "{DATETIME.NOW}"
+	CtoldPathToken = "${CTOLD}"
+	CtoldTagToken  = "${CTOLD.TAG}"
+	CtoldLastToken = "${CTOLD.REV}"
+	DateTimeToken  = "${DATETIME.NOW}"
 )
 
 const (
