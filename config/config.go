@@ -10,8 +10,9 @@ import (
 	"time"
 
 	"github.com/ardnew/ctoldup/log"
-	"github.com/mholt/archiver/v3"
+	"github.com/ardnew/roster"
 
+	"github.com/mholt/archiver/v3"
 	"github.com/otiai10/copy"
 	"gopkg.in/yaml.v3"
 )
@@ -233,6 +234,13 @@ func (cfg *Config) MergeAll() error {
 			Sync: true,
 		}); nil != err {
 			return err
+		}
+		if merge.Roster {
+			rosterFile := filepath.Join(dest, ".roster.yml")
+			log.Msg(log.Info, "roster", "%q -> %q", dest, rosterFile)
+			if err := roster.Take(roster.SkipTaker, ".roster.yml", true, dest); nil != err {
+				return err
+			}
 		}
 	}
 	return nil
